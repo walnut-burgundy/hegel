@@ -45,3 +45,7 @@ A successful formalization should make those assumptions visible and make counte
 This is a mathematical formalization of one proposed categorical model. It is not a proof that category theory is the correct language for Hegel, not a reconstruction of Hegel’s system, and not a claim that the interpretation implemented here is uniquely determined by Hegel’s texts.
 
 The intended standard is therefore modest but strict: define the model precisely, verify the properties actually claimed for it, and distinguish the mathematics from the philosophical interpretation placed on that mathematics.
+
+## Reading notes
+
+- [Theodor W. Adorno — “Aspects of Hegel’s Philosophy”](adorno-aspects-of-hegels-philosophy.md) — source guide and working description of Adorno’s first study in *Hegel: Three Studies*.
