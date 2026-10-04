@@ -48,4 +48,4 @@ The intended standard is therefore modest but strict: define the model precisely
 
 ## Reading notes
 
-- [Theodor W. Adorno — “Aspects of Hegel’s Philosophy”](adorno-aspects-of-hegels-philosophy.md) — source guide and working description of Adorno’s first study in *Hegel: Three Studies*.
+- [Theodor W. Adorno — “Aspects of Hegel’s Philosophy”](adorno-aspects-of-hegels-philosophy.md) — source guide and working description of Adorno’s first study in *Hegel: Three Studies*.\n- [Lacanian reasoning preflight](lacan-reasoning-preflight.md) — an operational check for desire, ambivalence, repetition, incompletion, recognition, and apparently irrational behavior.\n- [Jacques Lacan — Hegel, desire, and recognition](lacan-hegel-desire-recognition.md) — background reading note for the Lacanian branch.
