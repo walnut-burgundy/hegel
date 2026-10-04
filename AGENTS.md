@@ -19,3 +19,14 @@ identity/difference, negation, power asymmetry, or related social analysis, read
 [`hegel-lawvere-reasoning-preflight.md`](hegel-lawvere-reasoning-preflight.md)
 and the relevant repository notes. Use it as a silent reasoning check; do not
 force its vocabulary into the final answer when ordinary language is clearer.
+
+
+## Lacanian reasoning preflight
+
+When interpreting human desire, ambivalence, repetition, attachment, failure,
+achievement, identity, loss, or apparently irrational behavior, read
+[`lacan-reasoning-preflight.md`](lacan-reasoning-preflight.md) before answering.
+
+Use it to resist rational-actor simplifications and overly coherent stories.
+Do not present speculative hidden motives as facts, and do not psychologize
+material constraints.
