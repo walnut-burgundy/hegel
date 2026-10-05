@@ -30,3 +30,16 @@ achievement, identity, loss, or apparently irrational behavior, read
 Use it to resist rational-actor simplifications and overly coherent stories.
 Do not present speculative hidden motives as facts, and do not psychologize
 material constraints.
+
+
+## Ian Buruma reading preflight
+
+When analysis turns on tolerance, bourgeois self-conception, public virtue,
+class comfort, restraint, cosmopolitan moral authority, or the gap between
+professed universalism and actual social power, read
+[`ian-buruma-reading.md`](ian-buruma-reading.md).
+
+Use Buruma as reportage and argument, not as a license to generalize from one
+Dutch conflict to every liberal, immigrant, Muslim, secular institution, or
+middle-class person. Distinguish deliberate deception, self-deception, and
+unexamined structural advantage. Explanation does not excuse hypocrisy.
