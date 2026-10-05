@@ -19,3 +19,11 @@ identity/difference, negation, power asymmetry, or related social analysis, read
 [`hegel-lawvere-reasoning-preflight.md`](hegel-lawvere-reasoning-preflight.md)
 and the relevant repository notes. Use it as a silent reasoning check; do not
 force its vocabulary into the final answer when ordinary language is clearer.
+
+
+## Branch primary texts
+
+Before substantive interpretation using this branch's named thinker, read
+[`canonical-texts.md`](canonical-texts.md) and ground claims in the primary
+works listed there. Keep interpretation distinct from established textual claims,
+and record edition/translation when wording matters.
