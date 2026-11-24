@@ -1,0 +1,294 @@
+"""Measure Hegel prompts with the pinned Pythia process. Record raw responses."""
+import hashlib
+import platform
+import subprocess
+import sys
+from importlib.metadata import version
+from builtins import ValueError, setattr
+from pathlib import Path
+
+CORPUS ← "5652264d189e36ba20b4af1accf064cf45525641"
+HEGEL ← "ab6172478e8fb1922311f765d73030942368e48e"
+LACAN ← "be913845236bbef40f2309d66e6f9b412c23bc1b"
+TOKENS ← 96
+THREADS ← 2
+BATCH ← 1
+HEADER ← "slot\tcase\tvariant\tcondition\tseed\tprompt_sha256\tanswer_sha256\ttokens_sha256\tn_tokens\tstop"
+RULES ← ["baseline", "hegel", "lacan"]
+VARIANTS ← ["primary", "changed-fact", "distractor"]
+BOUNDARY ← "Read the scenario. Give a short answer grounded in the facts supplied."
+
+def at(root ∈ Path, name ∈ str) → Path:
+    child ∈ Path ← root.joinpath(name)
+    return child
+
+def command(args ∈ list[str]) → str:
+    result ∈ object ← subprocess.run(args, check=True, text=True, stdout=subprocess.PIPE)
+    text ∈ str ← result.stdout
+    return text
+
+def sha(file ∈ Path) → str:
+    digest ∈ object ← hashlib.sha256()
+    with file.open("rb") as source:
+        while True:
+            chunk ∈ bytes ← source.read(1048576)
+            if not chunk:
+                break
+            digest.update(chunk)
+    result ∈ str ← digest.hexdigest()
+    return result
+
+def table(file ∈ Path) → list[list[str]]:
+    data ∈ str ← file.read_text(encoding="utf-8")
+    lines ∈ list[str] ← data.splitlines()
+    rows ∈ list[list[str]] ← []
+    for line in lines:
+        rows.append(line.split("\t"))
+    return rows
+
+def excerpt(root ∈ str, ref ∈ str, file ∈ str, first ∈ int, last ∈ int) → str:
+    text ← command(["git", "-C", root, "show", ref + ":" + file])
+    lines ∈ list[str] ← text.splitlines()
+    if len(lines) < last:
+        raise ValueError("missing source lines for " + file)
+    return "\n".join(lines[first - 1:last])
+
+def plan(evals ∈ Path, profile ∈ str) → list[list[str]]:
+    if profile != "pilot" and profile != "reserved":
+        raise ValueError("profile must be pilot or reserved")
+    rows ∈ list[list[str]] ← []
+    cases ← table(at(evals, "cases.tsv"))
+    for case in cases[1:]:
+        if case[10] == "reserved":
+            case_id ← case[0]
+            variants ← VARIANTS if profile == "reserved" or case_id == "music-ensemble" else VARIANTS[:1]
+            policies ← RULES if case_id == "music-ensemble" else RULES[:2]
+            trials ← ["29", "31", "37"] if profile == "reserved" else ["29"]
+            for variant in variants:
+                for policy in policies:
+                    for seed in trials:
+                        rows.append([case_id, variant, policy, seed])
+    return rows
+
+def prompts(evals ∈ Path, grease ∈ str, rows ∈ list[list[str]]) → list[str]:
+    root ∈ str ← str(evals.parent)
+    command(["git", "-C", root, "diff", "--quiet", CORPUS, "--", "evals/cases.tsv",
+            "evals/rules.tsv", "evals/README.md", "evals/development", "evals/reserved",
+            "evals/check.grease", "evals/check.awk"])
+    rules ← excerpt(root, HEGEL, "hegel-lawvere-reasoning-preflight.md", 12, 17) + "\n\n"
+    rules ← rules + excerpt(root, HEGEL, "hegel-lawvere-reasoning-preflight.md", 39, 48) + "\n\n"
+    rules ← rules + excerpt(root, HEGEL, "AGENTS.md", 36, 108)
+    thinker ← excerpt(root, LACAN, "lacan-reasoning-preflight.md", 15, 38) + "\n\n"
+    thinker ← thinker + excerpt(root, LACAN, "lacan-reasoning-preflight.md", 74, 76) + "\n\n"
+    thinker ← thinker + excerpt(root, LACAN, "lacan-reasoning-preflight.md", 100, 108)
+    observed ∈ dict[str, str] ← {}
+    rendered ∈ list[str] ← []
+    for row in rows:
+        key ← row[0] + "/" + row[1]
+        if not (key ∈ observed):
+            clean ← command([grease, str(at(evals, "check.grease")), row[0], row[1]])
+            observed.__setitem__(key, clean.rstrip("\n"))
+        context ← BOUNDARY
+        if row[2] != "baseline":
+            context ← context + "\n\nReasoning instructions:\n" + rules
+        if row[2] == "lacan":
+            context ← context + "\n\nLacan preflight:\n" + thinker
+        rendered.append(context + "\n\nQuestion: " + observed[key] + "\n\nAnswer:")
+    return rendered
+
+def locked_model(root ∈ Path, directory ∈ Path) → list[list[str]]:
+    records ← table(at(root, "model.tsv"))
+    for row in records:
+        if row[0].startswith("sha256:"):
+            if sha(at(directory, row[0][7:])) != row[1]:
+                raise ValueError("model input does not match its pin " + row[0])
+        if row[0].startswith("version:"):
+            found ∈ str ← version(row[0][8:])
+            if found != row[1]:
+                raise ValueError("runtime package does not match its pin " + row[0])
+    return records
+
+def write(file ∈ Path, text ∈ str) → None:
+    file.write_text(text, encoding="utf-8")
+
+def slot_name(position ∈ int) → str:
+    name ∈ str ← str(position + 1).zfill(4)
+    return name
+
+def verify(run ∈ Path, profile ∈ str, expected ∈ list[list[str]], rendered ∈ list[str],
+           compare ∈ Path, locked ∈ list[list[str]]) → None:
+    if not run.joinpath("complete.tsv").is_file():
+        raise ValueError("missing completion marker")
+    marker ← table(at(run, "complete.tsv"))
+    if marker != [["kind", "model-execution"], ["profile", profile], ["rows", str(len(expected))],
+                  ["plan_sha256", sha(at(run, "plan.tsv"))],
+                  ["observations_sha256", sha(at(run, "observations.tsv"))]]:
+        raise ValueError("invalid completion marker")
+    config ← table(at(run, "plan.tsv"))
+    required ← settings_for(profile)
+    required.extend(locked)
+    required.extend([["corpus", CORPUS], ["runner_sha256", sha(at(compare, "run.pi"))]])
+    for field in required:
+        if not (field ∈ config):
+            raise ValueError("run metadata does not match the pinned plan " + field[0])
+    observations ← table(at(run, "observations.tsv"))
+    heading ∈ list[str] ← HEADER.split("\t")
+    if len(observations) != len(expected) + 1 or observations[0] != heading:
+        raise ValueError("missing, duplicate or malformed observations")
+    for position in range(len(expected)):
+        row ← observations[position + 1]
+        slot ← slot_name(position)
+        if len(row) != 10 or row[0] != slot or row[1:5] != expected[position]:
+            raise ValueError("observation does not match the fixed plan " + slot)
+        prompt ← at(run, slot + ".prompt.txt")
+        answer ← at(run, slot + ".answer.txt")
+        ids ← at(run, slot + ".tokens.txt")
+        text ∈ str ← prompt.read_text(encoding="utf-8")
+        if text != rendered[position] or row[5:8] != [sha(prompt), sha(answer), sha(ids)]:
+            raise ValueError("observed bytes do not match the receipt " + slot)
+        ids_text ∈ str ← ids.read_text(encoding="utf-8")
+        tokens ∈ list[str] ← ids_text.strip().split(" ")
+        if not 1 <= len(tokens) <= TOKENS or len(tokens) != int(row[8]):
+            raise ValueError("invalid generated token count " + slot)
+        for token in tokens:
+            if not token.isascii() or not token.isdigit() or int(token) >= 50304:
+                raise ValueError("invalid generated token " + slot)
+        early_tokens ← tokens[:-1]
+        early_eos ∈ int ← early_tokens.count("0")
+        if early_eos != 0 or row[9] != ("eos" if tokens[-1] == "0" else "length") or (row[9] == "length" and len(tokens) != TOKENS):
+            raise ValueError("invalid terminal classification " + slot)
+
+def generate(run ∈ Path, profile ∈ str, directory ∈ Path, expected ∈ list[list[str]], rendered ∈ list[str]) → None:
+    import torch
+    from transformers import AutoModelForCausalLM, AutoTokenizer, LogitsProcessor, LogitsProcessorList
+
+    class FiniteScores(LogitsProcessor):
+        def __call__(self ∈ FiniteScores, token_ids ∈ object, scores ∈ object) → object:
+            finite ∈ bool ← bool(scores.isfinite().all())
+            if not finite:
+                raise ValueError("nonfinite model scores")
+            return scores
+
+    torch.set_num_threads(THREADS)
+    torch.set_num_interop_threads(1)
+    tokenizer ∈ object ← AutoTokenizer.from_pretrained(str(directory), local_files_only=True)
+    setattr(tokenizer, "eos_token", "<|endoftext|>")
+    setattr(tokenizer, "pad_token", "<|endoftext|>")
+    setattr(tokenizer, "padding_side", "left")
+    setattr(tokenizer, "model_input_names", ["input_ids", "attention_mask"])
+    eos ∈ int ← tokenizer.eos_token_id
+    if eos != 0:
+        raise ValueError("unexpected EOS token")
+    print("Loading the pinned model", flush=True)
+    model ∈ object ← AutoModelForCausalLM.from_pretrained(
+        str(directory), local_files_only=True, use_safetensors=True,
+        torch_dtype=torch.bfloat16, low_cpu_mem_usage=True, attn_implementation="sdpa").eval()
+    if str(model.dtype) != "torch.bfloat16":
+        raise ValueError("unexpected precision")
+    setattr(model.generation_config, "eos_token_id", eos)
+    print("Running inference", flush=True)
+    output ∈ dict[int, str] ← {}
+    batch_size ← BATCH if profile == "pilot" else 1
+    for seed in ["29", "31", "37"]:
+        positions ∈ list[int] ← []
+        for position in range(len(expected)):
+            if expected[position][3] == seed:
+                positions.append(position)
+        for start in range(0, len(positions), batch_size):
+            batch ← positions[start:start + batch_size]
+            batch_text ∈ list[str] ← []
+            for position in batch:
+                batch_text.append(rendered[position])
+            encoded ∈ object ← tokenizer.__call__(batch_text, padding=True, return_tensors="pt", add_special_tokens=False)
+            width ∈ int ← encoded.input_ids.size(1)
+            if width + TOKENS > 2048:
+                raise ValueError("prompt would exceed model context")
+            torch.manual_seed(int(seed))
+            with torch.inference_mode():
+                settings ∈ dict[str, object] ← {}
+                if profile == "reserved":
+                    settings.update({"do_sample": True, "temperature": 0.7, "top_p": 0.9})
+                generated ∈ object ← model.generate(
+                    **encoded, **settings, max_new_tokens=TOKENS,
+                    pad_token_id=eos, eos_token_id=eos,
+                    logits_processor=LogitsProcessorList([FiniteScores()]))
+            generated_width ∈ int ← generated.size(1)
+            ids ∈ list[list[int]] ← generated.narrow(1, width, generated_width - width).tolist()
+            for index in range(len(batch)):
+                tokens ← ids[index]
+                if eos ∈ tokens:
+                    eos_index ∈ int ← tokens.index(eos)
+                    tokens ← tokens[:eos_index + 1]
+                position ← batch[index]
+                row ← observe(run, position, expected[position], rendered[position], tokens, tokenizer)
+                output.__setitem__(position, row)
+            print("Generated", len(output), "of", len(expected), flush=True)
+    receipt ∈ list[str] ← [HEADER]
+    for position in range(len(expected)):
+        receipt.append(output[position])
+    receipt_text ∈ str ← "\n".join(receipt)
+    write(at(run, "observations.tsv"), receipt_text + "\n")
+    marker ← "kind\tmodel-execution\nprofile\t" + profile + "\nrows\t" + str(len(expected)) + "\n"
+    marker ← marker + "plan_sha256\t" + sha(at(run, "plan.tsv")) + "\n"
+    marker ← marker + "observations_sha256\t" + sha(at(run, "observations.tsv")) + "\n"
+    write(at(run, "complete.pending"), marker)
+    run.joinpath("complete.pending").rename(at(run, "complete.tsv"))
+
+def observe(run ∈ Path, position ∈ int, expected ∈ list[str], rendered ∈ str,
+            tokens ∈ list[int], tokenizer ∈ object) → str:
+    slot ← slot_name(position)
+    answer ∈ str ← tokenizer.decode(tokens, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+    stop ← "eos" if tokens[-1] == 0 else "length"
+    prompt_path ← at(run, slot + ".prompt.txt")
+    answer_path ← at(run, slot + ".answer.txt")
+    ids_path ← at(run, slot + ".tokens.txt")
+    write(prompt_path, rendered)
+    write(answer_path, answer)
+    ids_text ∈ list[str] ← []
+    for token in tokens:
+        ids_text.append(str(token))
+    token_line ∈ str ← " ".join(ids_text)
+    write(ids_path, token_line + "\n")
+    row ∈ list[str] ← [slot]
+    row.extend(expected)
+    row.extend([sha(prompt_path), sha(answer_path), sha(ids_path), str(len(tokens)), stop])
+    return "\t".join(row)
+
+def settings_for(profile ∈ str) → list[list[str]]:
+    return [["precision", "bfloat16"], ["attention", "sdpa"], ["threads", str(THREADS)], ["interop_threads", "1"],
+            ["batch", str(BATCH if profile == "pilot" else 1)], ["max_new_tokens", str(TOKENS)], ["eos", "0"],
+            ["decoding", "greedy" if profile == "pilot" else "sample"],
+            ["temperature", "0.7" if profile == "reserved" else "unused"],
+            ["top_p", "0.9" if profile == "reserved" else "unused"]]
+
+def main() → None:
+    args ∈ list[str] ← sys.argv
+    if len(args) != 6 or not (args[1] ∈ ["run", "verify"]):
+        raise ValueError("usage: run.pi run|verify pilot|reserved MODEL_DIR GREASE RUN_DIR")
+    compare ∈ Path ← Path(__file__).resolve().parent
+    evals ∈ Path ← compare.parent
+    profile ← args[2]
+    directory ∈ Path ← Path(args[3]).resolve()
+    run ∈ Path ← Path(args[5]).resolve()
+    expected ← plan(evals, profile)
+    rendered ← prompts(evals, args[4], expected)
+    locked ← locked_model(compare, directory)
+    if args[1] == "run":
+        run.mkdir(mode=0o700)
+        revision ∈ str ← command(["git", "-C", str(evals.parent), "rev-parse", "HEAD"]).strip()
+        tree ∈ str ← command(["git", "-C", str(evals.parent), "rev-parse", "HEAD^{tree}"]).strip()
+        python_version ∈ str ← platform.python_version()
+        environment ∈ list[list[str]] ← [["corpus", CORPUS], ["checkout", revision], ["tree", tree],
+            ["runner_sha256", sha(at(compare, "run.pi"))], ["python", python_version]]
+        environment.extend(settings_for(profile))
+        environment.extend(locked)
+        metadata ∈ list[str] ← []
+        for row in environment:
+            metadata.append("\t".join(row))
+        plan_text ∈ str ← "\n".join(metadata)
+        write(at(run, "plan.tsv"), plan_text + "\n")
+        generate(run, profile, directory, expected, rendered)
+    verify(run, profile, expected, rendered, compare, locked)
+    print("PASS structure", len(expected), "observations", profile)
+
+main()
