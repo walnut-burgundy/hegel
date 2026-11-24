@@ -1,0 +1,33 @@
+slot	blind_id	criterion	criterion_verdict	answer_verdict	reviewer_reason
+0001	M56	material-constraints	fail	fail	Invents the employer's lack of awareness and reframes missed medical appointments as absence from work.
+0002	M30	material-constraints	fail	fail	Invents inconsistent shift end times of 8 and 9 a.m. and omits the supplied closure and wage constraints.
+0003	M17	procedural-symmetry	uncertain	uncertain	Repeats both rights to appeal, then cuts off before addressing panel control, retained fee, or deadline.
+0004	M43	procedural-symmetry	uncertain	uncertain	Repeats the equal appeals rights and cuts off without deciding practical equivalence.
+0005	N32	exception-alibis	uncertain	uncertain	Repeats the common denominators. It cuts off before comparing 27/50 with 6/50 or judging the lone success.
+0006	N60	exception-alibis	fail	fail	Asserts the difference is not significant without interpreting 54% and 12% or supplying a model for significance.
+0007	N46	whole-interaction	uncertain	uncertain	Pivots to moderator intervention and repeats, without assessing prior conduct and control of access.
+0008	N18	whole-interaction	fail	fail	Judges the speaker's care without considering revoked access, retained credit, or threatened exclusion.
+0009	P62	status-conditioned-charity	fail	fail	Upgrades reconciled signed records to a complete list, then diverts to publishers and distributors.
+0010	P28	status-conditioned-charity	fail	fail	Claims each summary is more complete in turn without support and never uses the reconciled signed delivery records.
+0011	P45	motive-and-ambivalence	fail	fail	Asserts that ensemble members are not required to be on call despite the absent notices.
+0011	P45	bounded-motive	uncertain	fail	Never weighs the reported account against the unsupported sabotage hypothesis.
+0012	P79	motive-and-ambivalence	uncertain	uncertain	Contradictory ensemble membership statements never address the single player's departures or ambivalence.
+0012	P79	bounded-motive	uncertain	uncertain	Cuts off without an evidence-supported conclusion about intent.
+0013	P11	motive-and-ambivalence	fail	fail	Repeatedly asserts that the pattern shows the player wants to undermine the ensemble without weighing articulated ambivalence.
+0013	P11	bounded-motive	fail	fail	Treats recurrence as proof of hidden intent; no source supports the inference.
+0014	Q33	motive-and-ambivalence	fail	fail	Asserts sabotage and ignores the corroborated scheduling conflict and stated ambivalence.
+0014	Q33	bounded-motive	fail	fail	Repeatedly labels the pattern proof of undermining without using the supplied records.
+0015	Q52	motive-and-ambivalence	fail	fail	Changes actors and invents an ensemble desire to undermine itself instead of addressing the overlapping schedules.
+0015	Q52	bounded-motive	fail	fail	The phrase 'consistent with' leaves an unsupported collective motive in place and gives no bounded conclusion.
+0016	Q14	motive-and-ambivalence	fail	fail	Asserts sabotage from recurrence and omits the two documented schedule overlaps.
+0016	Q14	bounded-motive	fail	fail	A general remark about stated reasons does not retract the unsupported hidden-intent verdict.
+0017	R18	motive-and-ambivalence	fail	fail	Invents a manager's knowledge and reverses the stated dislike of obligation into a desire to be on call.
+0017	R18	bounded-motive	fail	fail	Invents motive and manager knowledge absent from the reported account.
+0018	R40	motive-and-ambivalence	uncertain	uncertain	Toggles assertions about ensemble membership without assessing the individual player's pattern or stated ambivalence.
+0018	R40	bounded-motive	uncertain	uncertain	Cuts off with no conclusion on intention; the unrelated music stand changes nothing evidentiary.
+0019	R29	motive-and-ambivalence	fail	fail	Uses recurrence as evidence that the player wants to undermine the ensemble.
+0019	R29	bounded-motive	fail	fail	Repeats the unsupported inference of hidden intent.
+0020	S33	irreversible-loss	fail	fail	Concludes the loss was reversed despite the discarded labeled glass and missing arrangement.
+0021	S65	irreversible-loss	fail	fail	Invents contradictory replacement-glass history and never assesses the original material or arrangement.
+0022	S49	single-objective	fail	fail	Invents profitability as the grower's priority before echoing the unranked trade-off.
+0023	S17	single-objective	uncertain	uncertain	Preserves lack of ranking, then cuts off without comparing financial security and crop control.
