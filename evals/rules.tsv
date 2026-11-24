@@ -1,0 +1,10 @@
+rule_id	revision	path	first_line	last_line	source_role
+material-constraints	ab6172478e8fb1922311f765d73030942368e48e	AGENTS.md	41	44	repository-rule
+procedural-symmetry	ab6172478e8fb1922311f765d73030942368e48e	hegel-lawvere-reasoning-preflight.md	15	17	repository-rule
+exception-alibis	ab6172478e8fb1922311f765d73030942368e48e	AGENTS.md	77	79	repository-rule
+whole-interaction	ab6172478e8fb1922311f765d73030942368e48e	AGENTS.md	81	83	repository-rule
+status-conditioned-charity	ab6172478e8fb1922311f765d73030942368e48e	AGENTS.md	85	88	repository-rule
+motive-and-ambivalence	be913845236bbef40f2309d66e6f9b412c23bc1b	lacan-reasoning-preflight.md	24	38	repository-rule
+irreversible-loss	ab6172478e8fb1922311f765d73030942368e48e	AGENTS.md	53	55	repository-rule
+single-objective	ab6172478e8fb1922311f765d73030942368e48e	AGENTS.md	46	47	repository-rule
+bounded-motive	ab6172478e8fb1922311f765d73030942368e48e	AGENTS.md	57	62	repository-rule

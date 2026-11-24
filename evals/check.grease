@@ -1,0 +1,24 @@
+#!/usr/bin/env grease
+
+if test "$#" -ne 0 && test "$#" -ne 2 {
+  echo 'Usage: grease check.grease [CASE_ID primary|changed-fact|distractor]' >&2
+  exit 2
+}
+
+var corpus = $(dirname -- "$0")
+var case_id = ''
+var variant = ''
+if test "$#" -eq 2 {
+  setvar case_id = "$1"
+  setvar variant = "$2"
+  if test -z "$case_id" {
+    echo 'Supply a case ID.' >&2
+    exit 2
+  }
+}
+
+LC_ALL=C awk -v "emit_case=$case_id" -v "emit_variant=$variant" \
+  -f "$corpus/check.awk" "$corpus/rules.tsv" "$corpus/cases.tsv" \
+  "$corpus/development/prompts.tsv" "$corpus/development/rubrics.tsv" \
+  "$corpus/development/examples.tsv" \
+  "$corpus/reserved/prompts.tsv" "$corpus/reserved/rubrics.tsv"

@@ -1,0 +1,74 @@
+#!/usr/bin/env grease
+
+if test "$#" -ne 1 {
+  echo 'Usage: grease self-test.grease /absolute/path/to/grease' >&2
+  exit 2
+}
+
+var grease = "$1"
+var corpus = $(dirname -- "$0")
+var work = $(mktemp -d)
+trap --add EXIT { rm -rf -- "$work" }
+
+$grease "$corpus/check.grease"
+
+var repository = "$corpus/.."
+awk -F '\t' 'NR > 1 { print $1, $2, $3, $4, $5 }' "$corpus/rules.tsv" > "$work/sources.txt"
+while read -r rule revision path first last {
+  git -C "$repository" show "$revision:$path" > "$work/source.txt"
+  awk -v first="$first" -v last="$last" '
+    NR >= first && NR <= last && NF { found = 1 }
+    END { if (!found || NR < last) exit 1 }
+  ' "$work/source.txt"
+  echo "PASS source locator $rule"
+} < "$work/sources.txt"
+
+proc refuse(name, diagnostic) {
+  if $grease "$work/$name/check.grease" > "$work/$name.log" 2>&1 {
+    echo "FAIL accepted $name" >&2
+    exit 1
+  }
+  rg -q -- "FAIL $diagnostic " "$work/$name.log"
+  echo "PASS rejected $name"
+}
+
+for name in missing-source contradictory-label duplicate-input leaked-answer {
+  cp -R -- "$corpus" "$work/$name"
+}
+
+var rubrics = "$work/missing-source/development/rubrics.tsv"
+awk -F '\t' 'BEGIN { OFS=FS } NR == 2 { $2="unregistered-rule" } { print }' "$rubrics" > "$work/changed.tsv"
+mv -- "$work/changed.tsv" "$rubrics"
+refuse missing-source missing-provenance
+
+var examples = "$work/contradictory-label/development/examples.tsv"
+awk -F '\t' 'BEGIN { OFS=FS } NR == 2 { answer=$4 } NR == 3 { $4=answer } { print }' "$examples" > "$work/changed.tsv"
+mv -- "$work/changed.tsv" "$examples"
+refuse contradictory-label contradictory-verdict
+
+var dev_prompts = "$work/duplicate-input/development/prompts.tsv"
+var reserved_prompts = "$work/duplicate-input/reserved/prompts.tsv"
+awk -F '\t' 'BEGIN { OFS=FS } NR == 2 { for (i=2; i<=6; ++i) value[i]=$i }
+    NR>FNR { if (FNR==2) for (i=2; i<=6; ++i) $i=value[i]; print }' \
+  "$dev_prompts" "$reserved_prompts" > "$work/changed.tsv"
+mv -- "$work/changed.tsv" "$reserved_prompts"
+refuse duplicate-input duplicate-input
+
+setvar rubrics = "$work/leaked-answer/development/rubrics.tsv"
+setvar dev_prompts = "$work/leaked-answer/development/prompts.tsv"
+awk -F '\t' 'BEGIN { OFS=FS } NR == 2 { answer=$6 }
+    NR>FNR { if (FNR==2) $3=$3 " " answer; print }' "$rubrics" "$dev_prompts" > "$work/changed.tsv"
+mv -- "$work/changed.tsv" "$dev_prompts"
+refuse leaked-answer answer-in-input
+
+for variant in primary changed-fact distractor {
+  awk -F '\t' -v "variant=$variant" '$1 == "evening-clinic" {
+    print $2 "\n\n" $3
+    if (variant == "changed-fact") print $5
+    else print $4
+    if (variant == "distractor") print $6
+  }' "$corpus/reserved/prompts.tsv" > "$work/expected.txt"
+  $grease "$corpus/check.grease" evening-clinic "$variant" > "$work/prompt.txt"
+  cmp -- "$work/expected.txt" "$work/prompt.txt"
+  echo "PASS isolated $variant prompt bytes"
+}

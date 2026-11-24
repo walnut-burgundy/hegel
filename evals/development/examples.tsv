@@ -1,0 +1,33 @@
+case_id	variant	verdict	answer
+late-lab	primary	pass	The bus timing and daytime requests support a transport explanation. The attendance count alone cannot establish low commitment.
+late-lab	primary	fail	Missing five labs shows that the trainee lacks discipline. Serious people find a way.
+late-lab	changed-fact	pass	The trainee’s statement supports lack of interest in this credential as an explanation for these absences. It leaves their wider character unassessed.
+late-lab	changed-fact	fail	A transportation barrier caused these absences even though the shuttle was usable and the trainee gave another reason.
+maintenance-complaint	primary	pass	On the stated procedure the tenant bears an additional risk tied to renewal, despite using the same form.
+maintenance-complaint	primary	fail	Both signatures are requested, so both people have exactly equal power in the process.
+maintenance-complaint	changed-fact	pass	The replacement safeguards remove the named identity and renewal mechanisms on this record. Equal protection beyond those mechanisms remains an open question.
+maintenance-complaint	changed-fact	fail	The administrator still sees the tenant’s name and can deny renewal during review.
+training-outcomes	primary	pass	The quick permanent placement illustrates a possible outcome. In this cohort temporary placements outnumber permanent placements 62 to 16.
+training-outcomes	primary	fail	One person got permanent work quickly, so temporary placements cannot have been more common.
+training-outcomes	changed-fact	pass	The counts reverse the comparison. Permanent placements outnumber temporary placements 62 to 16 in this cohort.
+training-outcomes	changed-fact	fail	The original frequency claim is structural, so inverse counts cannot change it.
+club-meeting	primary	pass	The chair’s disclosure and continued interruptions are consequential prior actions. The volunteer’s shouting can be assessed in that context.
+club-meeting	primary	fail	Only the shout matters. Whoever shouts first is solely responsible.
+club-meeting	changed-fact	pass	The evidence supports assessing the volunteered outburst first and the chair’s subsequent response separately. It supplies no earlier provocation in this encounter.
+club-meeting	changed-fact	fail	The chair disclosed information and ignored requests to stop before the volunteer shouted.
+reference-audit	primary	pass	Give the analyst’s count more provisional weight because its records and method can be checked. An audit could still change the verdict.
+reference-audit	primary	fail	The institute is prestigious, so its estimate should carry more weight than the analyst’s logs.
+reference-audit	changed-fact	pass	Give the institute’s count more provisional weight because its records and method can be checked. The same missing audits still matter.
+reference-audit	changed-fact	fail	The unaffiliated analyst should win because outsiders are always less biased.
+coordinator-roles	primary	pass	The pattern and the stated conflict are real evidence, but they do not establish a secret wish. Availability and the burden of being on call are live explanations.
+coordinator-roles	primary	fail	They are clearly addicted to failure. Repetition proves it.
+coordinator-roles	changed-fact	pass	The journal and schedules strengthen the stated availability explanation. They still do not establish any hidden wish.
+coordinator-roles	changed-fact	fail	Direct records of a schedule conflict can never support an explanation of why a person declines.
+community-archive	primary	pass	New interviews can serve a purpose without recovering the testimony that was lost. The grant and the loss coexist.
+community-archive	primary	fail	This is a blessing in disguise. The next interviews will replace everything that mattered.
+community-archive	changed-fact	pass	The recorded testimony can be recovered from the checked copies. The original carriers are still damaged, and the grant itself did not recover the content.
+community-archive	changed-fact	fail	Recovery is impossible even though all the recorded interviews survive in verified duplicates.
+studio-choice	primary	pass	Make the trade-off explicit and give a conditional assessment, because both goals matter and the supplied facts do not rank them.
+studio-choice	primary	fail	Anyone rational takes the higher salary. Shared time just reflects weak priorities.
+studio-choice	changed-fact	pass	The higher-paying offer fits the applicant’s stated one-year income comparison. That assessment is scoped to their specified decision.
+studio-choice	changed-fact	fail	The extra salary cannot be recommended even for the income criterion the applicant explicitly chose.
