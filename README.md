@@ -49,3 +49,9 @@ The intended standard is therefore modest but strict: define the model precisely
 ## Reading notes
 
 - [Theodor W. Adorno — “Aspects of Hegel’s Philosophy”](adorno-aspects-of-hegels-philosophy.md) — source guide and working description of Adorno’s first study in *Hegel: Three Studies*.
+
+## Reasoning evaluation
+
+[Hegel reasoning cases](evals/README.md) provides synthetic tests of the
+repository's reasoning rules, with source-located rubrics and separate
+development and reserved scenarios.
