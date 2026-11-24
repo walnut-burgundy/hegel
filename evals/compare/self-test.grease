@@ -1,0 +1,42 @@
+#!/usr/bin/env grease
+
+if test "$#" -ne 4 {
+  echo 'Usage: grease self-test.grease ITHON MODEL_DIR GREASE VERIFIED_PILOT_RUN' >&2
+  exit 2
+}
+
+var ithon = "$1"
+var model = "$2"
+var grease = "$3"
+var pilot = "$4"
+var here = $(dirname -- "$0")
+var work = $(mktemp -d)
+trap --add EXIT { rm -rf -- "$work" }
+
+proc refuse(name, reason) {
+  if $ithon "$here/run.pi" verify pilot "$model" "$grease" "$work/$name" > "$work/$name.log" 2>&1 {
+    echo "FAIL accepted $name" >&2
+    exit 1
+  }
+  rg -q -F -- "$reason" "$work/$name.log"
+  echo "PASS rejected $name"
+}
+
+$ithon "$here/run.pi" verify pilot "$model" "$grease" "$pilot"
+for name in interrupted synthetic missing-answer edited-answer malformed {
+  cp -R -- "$pilot" "$work/$name"
+}
+mv -- "$work/interrupted/complete.tsv" "$work/interrupted/complete.pending"
+refuse interrupted 'missing completion marker'
+sed -i 's/model-execution/synthetic-fixture/' "$work/synthetic/complete.tsv"
+refuse synthetic 'invalid completion marker'
+rm -- "$work/missing-answer/0001.answer.txt"
+refuse missing-answer '0001.answer.txt'
+printf 'Fabricated completion.\n' > "$work/edited-answer/0001.answer.txt"
+refuse edited-answer 'observed bytes do not match the receipt'
+sed -i '2s/\t.*//' "$work/malformed/observations.tsv"
+var observed = $(sha256sum "$work/malformed/observations.tsv" | cut -d ' ' -f 1)
+awk -F '\t' -v "digest=$observed" 'BEGIN { OFS=FS }
+    $1=="observations_sha256" { $2=digest } { print }' "$work/malformed/complete.tsv" > "$work/marker.tsv"
+mv -- "$work/marker.tsv" "$work/malformed/complete.tsv"
+refuse malformed 'observation does not match the fixed plan'
